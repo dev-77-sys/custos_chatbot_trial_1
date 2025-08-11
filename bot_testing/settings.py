@@ -65,7 +65,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
 
-    "chatbot1",  # Your chatbot app
+    "chatbot1",  
 ]
 
 # ------------------------
