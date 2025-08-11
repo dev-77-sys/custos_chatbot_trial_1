@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.env
+.venv/
+venv/
+*.sqlite3
+db.sqlite3
+
+# Django
+staticfiles/
+media/
+
+# Node (if any)
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Models / weights / huge files
+*.safetensors
+*.pt
+*.bin
+
+# IDE
+.vscode/
+.idea/

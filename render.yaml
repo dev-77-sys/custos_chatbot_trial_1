@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: custos-chatbot
+    runtime: python
+    plan: free
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+    startCommand: |
+      python manage.py migrate --noinput && \
+      gunicorn bot_testing.wsgi:application \
+        --bind 0.0.0.0:10000 \
+        --workers 2 --threads 2 --timeout 600
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DJANGO_SETTINGS_MODULE
+        value: bot_testing.settings
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: ""    # settings adds RENDER_EXTERNAL_HOSTNAME automatically
+      - key: CUSTOS_API_KEY
+        sync: false
+      # --- Groq as OpenAI-compatible provider ---
+      - key: MODEL_PROVIDER
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: OPENAI_MODEL
+        value: llama-3.1-8b-instant
+      - key: MAX_NEW_TOKENS
+        value: "140"
+      - key: SYSTEM_PROMPT
+        value: You are a friendly nutrition assistant. First ask ONE short clarifying question (diet or craving). Then give EXACTLY 3 ideas: 1 quick, 1 budget, 1 healthy. Use bullets with emojis, 1 sentence each. Keep it under 100 words. Do not roleplay or include metadata.
+      # --- Database URL from managed Postgres below ---
+      - key: DATABASE_URL
+        fromDatabase:
+          name: custos-chatbot-db
+          property: connectionString
+
+databases:
+  - name: custos-chatbot-db
+    plan: free
+    databaseName: custosdb
+    user: custosuser

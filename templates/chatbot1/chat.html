@@ -1,0 +1,102 @@
+<!-- templates/chatbot1/chat.html -->
+
+{% extends "base.html" %}
+{% block title %}Custos Labs Chatbot{% endblock %}
+
+{% block body %}
+<nav class="navbar border-bottom">
+  <div class="container">
+    <span class="navbar-brand mb-0 h1">Custos Labs Chatbot</span>
+  </div>
+</nav>
+
+<div class="chat-wrap">
+  <div id="messages" class="messages container py-3">
+    <div class="text-center text-secondary small">Start a conversation below.</div>
+  </div>
+
+  <div class="composer border-top">
+    <div class="container py-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md">
+          <textarea id="prompt" rows="1" class="form-control" placeholder="Let's Talk About Anything…"></textarea>
+        </div>
+        <div class="col-12 col-md-auto d-grid">
+          <button id="send" class="btn btn-light">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const API_URL = "{% url 'chat' %}";
+  const $msgs = document.getElementById("messages");
+  const $ta = document.getElementById("prompt");
+  const $btn = document.getElementById("send");
+
+  function addBubble(text, who) {
+    const wrap = document.createElement("div");
+    wrap.className = "my-2 d-flex " + (who === "user" ? "justify-content-end" : "justify-content-start");
+    const b = document.createElement("div");
+    b.className = "bubble " + (who === "user" ? "user" : "bot");
+    b.textContent = text || "(empty)";
+    wrap.appendChild(b);
+    $msgs.appendChild(wrap);
+    $msgs.scrollTop = $msgs.scrollHeight;
+  }
+
+  function autoResize(el) {
+    el.style.height = "0px";
+    el.style.height = Math.min(el.scrollHeight, 160) + "px";
+  }
+
+  function setBusy(on) {
+    $btn.disabled = on;
+    $btn.textContent = on ? "Sending…" : "Send";
+    $ta.disabled = on;
+  }
+
+  async function send() {
+    const prompt = $ta.value.trim();
+    if (!prompt) return;
+    addBubble(prompt, "user");
+    $ta.value = "";
+    autoResize($ta);
+    $ta.focus();
+
+    setBusy(true);
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ prompt })
+      });
+      const isJson = (res.headers.get("content-type") || "").includes("application/json");
+      const data = isJson ? await res.json() : { raw: await res.text() };
+
+      if (res.ok) {
+        addBubble(data.response ?? data.message ?? data.raw ?? "(no response)", "bot");
+      } else {
+        addBubble("Sorry—server error (" + res.status + "). Please try again.", "bot");
+        console.error("Server payload:", data);
+      }
+    } catch (e) {
+      addBubble("Network error. Check your connection and try again.", "bot");
+      console.error(e);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  $btn.addEventListener("click", send);
+  $ta.addEventListener("keydown", (e) => {
+    autoResize($ta);
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+  $ta.addEventListener("input", () => autoResize($ta));
+  $ta.focus();
+</script>
+{% endblock %}
