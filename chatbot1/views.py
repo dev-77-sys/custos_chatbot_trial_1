@@ -1,6 +1,5 @@
 # custos-chatbot/bot_testing/chatbot1/views.py
 
-
 import logging
 import re
 from django.views.generic import TemplateView
@@ -12,7 +11,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
 from .models import MyChatbot1
-from .alignment import guardian
 
 logger = logging.getLogger(__name__)
 
@@ -74,10 +72,5 @@ class ChatbotView(APIView):
             if _looks_derailed(response):
                 response = _meal_fallback()
 
-        # Evaluate with Custos, but never expose the result
-        try:
-            _ = guardian.evaluate(prompt, response)
-        except Exception as e:
-            logger.warning("Alignment flagged/failed: %s", e)
-
+        # No explicit guardian call needed — Custos auto-captures and posts.
         return Response({"prompt": prompt, "response": response}, status=200)
