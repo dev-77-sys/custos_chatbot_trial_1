@@ -109,3 +109,17 @@ def get_guardian():
 
     _cached_guardian = _NullGuardian()
     return _cached_guardian
+
+
+def set_backend_url_if_available(url: str) -> None:
+    global custos
+    if not custos:
+        os.environ["CUSTOS_BACKEND_URL"] = url
+        return
+    try:
+        if hasattr(custos, "set_backend_url"):
+            custos.set_backend_url(url)  # type: ignore[attr-defined]
+        else:
+            os.environ["CUSTOS_BACKEND_URL"] = url
+    except Exception:
+        os.environ["CUSTOS_BACKEND_URL"] = url
