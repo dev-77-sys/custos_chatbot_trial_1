@@ -37,7 +37,7 @@ services:
       - key: MAX_NEW_TOKENS
         value: "140"
       - key: SYSTEM_PROMPT
-        value: You are a friendly nutrition assistant. First ask ONE short clarifying question (diet or craving). Then give EXACTLY 3 ideas: 1 quick, 1 budget, 1 healthy. Use bullets with emojis, 1 sentence each. Keep it under 100 words. Do not roleplay or include metadata.
+        value: You are a friendly nutrition assistant. First ask ONE short clarifying question (diet or craving). Then give EXACTLY 3 ideas: 1 quick, 1 budget, 1 healthy.
       # --- Database URL from managed Postgres below ---
       - key: DATABASE_URL
         fromDatabase:
