@@ -3,7 +3,7 @@
 # chatbot1/urls.py
 from django.urls import path
 from .views import ChatbotView, ChatUI
-from .diag import custos_diag, custos_force_beat, custos_force_beat
+from .diag import custos_diag, custos_force_beat, custos_force_beat, custos_selftest
 
 urlpatterns = [
     path("chat/", ChatbotView.as_view(), name="chat"),
@@ -13,4 +13,5 @@ urlpatterns = [
     path("custos/diag/", custos_diag, name="custos_diag"),
     path("custos/beat/", custos_force_beat, name="custos_force_beat"),
     path("custos/beat/", custos_force_beat),
+    path("custos/selftest/", custos_selftest),
 ]

@@ -1,7 +1,8 @@
 # chatbot1/diag.py
-import os, importlib
+import os, importlib, json, requests
 from django.http import JsonResponse
 from django.conf import settings
+
 
 def _mask(s: str) -> str:
     if not s:
@@ -61,3 +62,33 @@ def custos_force_beat(request):
         return JsonResponse({"sent": True})
     except Exception as e:
         return JsonResponse({"sent": False, "error": str(e)}, status=500)
+
+
+
+
+def custos_selftest(request):
+    url = (os.getenv("CUSTOS_BACKEND_URL", "").rstrip("/") + "/simulator/logs/")
+    key = os.getenv("CUSTOS_API_KEY", "")
+    if not key:
+        return JsonResponse({"ok": False, "error": "No CUSTOS_API_KEY env"}, status=500)
+
+    payload = {
+        "kind": "response",
+        "prompt": "selftest-prompt",
+        "response": "selftest-response",
+        "confidence": 0.96,
+    }
+    try:
+        r = requests.post(
+            url,
+            data=json.dumps(payload),
+            headers={"Authorization": f"ApiKey {key}", "Content-Type": "application/json"},
+            timeout=8,
+        )
+        try:
+            body = r.json()
+        except Exception:
+            body = {"text": r.text[:500]}
+        return JsonResponse({"ok": 200 <= r.status_code < 300, "status": r.status_code, "body": body})
+    except Exception as e:
+        return JsonResponse({"ok": False, "error": str(e)}, status=500)
